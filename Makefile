@@ -7,8 +7,8 @@
 
 ## VARIABLES
 ## --------------------------------------------->
-EXEC :=	doop
-FLAG :=
+EXEC :=	pushswap_checker
+FLAG := -Wall -dynamic
 CC :=	ghc
 EXT :=	hs
 ## --------------------------------------------->
