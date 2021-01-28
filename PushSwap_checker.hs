@@ -21,22 +21,26 @@ rra :: [Int] -> [Int]
 rra [] = []
 rra l = last l : init l
 
+pushSwapBis :: [Int] -> [Int] -> [String] -> ([Int], [Int])
+pushSwapBis la lb [] = (la, lb)
+pushSwapBis la lb (s:sl) = case s of
+                            "ra"  -> pushSwap (ra la) lb sl
+                            "rb"  -> pushSwap la (ra lb) sl
+                            "rr"  -> pushSwap (ra la) (ra lb) sl
+                            "rra" -> pushSwap (rra la) lb sl
+                            "rrb" -> pushSwap la (rra lb) sl
+                            "rrr" -> pushSwap (rra la) (rra lb) sl
+                            _ -> (la, lb)
+
 pushSwap :: [Int] -> [Int] -> [String] -> ([Int], [Int])
 pushSwap la lb [] = (la, lb)
-pushSwap la lb (s:sl) =
-                    case s of
-                        "sa"  -> pushSwap (sa la) lb sl
-                        "sb"  -> pushSwap la (sa lb) sl
-                        "sc"  -> pushSwap (sa la) (sa lb) sl
-                        "pa"  -> pushSwap (head lb:la) (tail lb) sl
-                        "pb"  -> pushSwap (tail la) (head la:lb) sl
-                        "ra"  -> pushSwap (ra la) lb sl
-                        "rb"  -> pushSwap la (ra lb) sl
-                        "rr"  -> pushSwap (ra la) (ra lb) sl
-                        "rra" -> pushSwap (rra la) lb sl
-                        "rrb" -> pushSwap la (rra lb) sl
-                        "rrr" -> pushSwap (rra la) (rra lb) sl
-                        _ -> (la, lb)
+pushSwap la lb (s:sl) = case s of
+                            "sa"  -> pushSwap (sa la) lb sl
+                            "sb"  -> pushSwap la (sa lb) sl
+                            "sc"  -> pushSwap (sa la) (sa lb) sl
+                            "pa"  -> pushSwap (head lb:la) (tail lb) sl
+                            "pb"  -> pushSwap (tail la) (head la:lb) sl
+                            _ -> pushSwapBis la lb (s:sl)
 
 atoiList :: [String] -> [Int]
 atoiList = map read
@@ -53,5 +57,6 @@ printResult l = putStr "KO: " >> print l
 
 main :: IO ()
 main = do
+        operands <- words <$> getLine
         numbers <- atoiList <$> getArgs
-        printResult (pushSwap numbers [] ["sa", "pb", "pb", "pb", "sa", "pa", "pa", "pa"])
+        printResult (pushSwap numbers [] operands)
