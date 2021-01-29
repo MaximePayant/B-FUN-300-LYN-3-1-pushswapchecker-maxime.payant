@@ -6,7 +6,7 @@
 -}
 
 import System.Environment
---import System.Exit
+import System.Exit
 
 sa :: [Int] -> [Int]
 sa [] = []
@@ -21,8 +21,17 @@ rra :: [Int] -> [Int]
 rra [] = []
 rra l = last l : init l
 
-pushSwapBis :: [Int] -> [Int] -> [String] -> ([Int], [Int])
-pushSwapBis la lb [] = (la, lb)
+pa :: [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
+pa la [] sl = pushSwap la [] sl
+pa la lb sl = pushSwap (head lb:la) (tail lb) sl
+
+pb :: [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
+pb [] lb sl = pushSwap [] lb sl
+pb la lb sl = pushSwap (tail la) (head la:lb) sl
+
+pushSwapBis :: [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
+pushSwapBis [] [] _  = (Just ([], []))
+pushSwapBis la lb [] = (Just (la, lb))
 pushSwapBis la lb (s:sl) = case s of
                             "ra"  -> pushSwap (ra la) lb sl
                             "rb"  -> pushSwap la (ra lb) sl
@@ -30,17 +39,24 @@ pushSwapBis la lb (s:sl) = case s of
                             "rra" -> pushSwap (rra la) lb sl
                             "rrb" -> pushSwap la (rra lb) sl
                             "rrr" -> pushSwap (rra la) (rra lb) sl
-                            _ -> (la, lb)
+                            _ -> Nothing
 
-pushSwap :: [Int] -> [Int] -> [String] -> ([Int], [Int])
-pushSwap la lb [] = (la, lb)
+pushSwap :: [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
+pushSwap [] [] _  = (Just ([], []))
+pushSwap la lb [] = (Just (la, lb))
 pushSwap la lb (s:sl) = case s of
                             "sa"  -> pushSwap (sa la) lb sl
                             "sb"  -> pushSwap la (sa lb) sl
                             "sc"  -> pushSwap (sa la) (sa lb) sl
-                            "pa"  -> pushSwap (head lb:la) (tail lb) sl
-                            "pb"  -> pushSwap (tail la) (head la:lb) sl
+                            "pa" -> pa la lb sl
+                            "pb" -> pb la lb sl
                             _ -> pushSwapBis la lb (s:sl)
+
+readInt :: [Char] -> Maybe Int
+readInt [] = Nothing
+readInt a = case (reads a) :: [(Int, String)] of
+                  [(nbr, "")] -> Just nbr
+                  _         -> Nothing
 
 atoiList :: [String] -> [Int]
 atoiList = map read
@@ -48,12 +64,15 @@ atoiList = map read
 checkSort :: [Int] -> Bool
 checkSort [] = True
 checkSort [_] = True
-checkSort (x:y:l) | x < y = checkSort (y : l)
+checkSort (x:y:l) | x <= y = checkSort (y : l)
                   | otherwise = False
 
-printResult :: ([Int], [Int]) -> IO ()
-printResult (la, []) | checkSort la = putStrLn "OK"
-printResult l = putStr "KO: " >> print l
+printResult :: Maybe ([Int], [Int]) -> IO ()
+printResult Nothing = exitWith (ExitFailure 84)
+printResult (Just ([], [])) = putStrLn "OK"
+printResult (Just ([], _)) = putStrLn "KO"
+printResult (Just (la, [])) | checkSort la = putStrLn "OK"
+printResult (Just l) = putStr "KO: " >> print l
 
 main :: IO ()
 main = do
