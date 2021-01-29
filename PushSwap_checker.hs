@@ -41,16 +41,16 @@ pushSwapBis la lb (s:sl) = case s of
                             "rrr" -> pushSwap (rra la) (rra lb) sl
                             _ -> Nothing
 
-pushSwap :: [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
-pushSwap [] [] _  = (Just ([], []))
-pushSwap la lb [] = (Just (la, lb))
+pushSwap :: Maybe [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
+pushSwap [] [] _  = Just ([], [])
+pushSwap la lb [] = Just (la, lb)
 pushSwap la lb (s:sl) = case s of
-                            "sa"  -> pushSwap (sa la) lb sl
-                            "sb"  -> pushSwap la (sa lb) sl
-                            "sc"  -> pushSwap (sa la) (sa lb) sl
+                            "sa" -> pushSwap (sa la) lb sl
+                            "sb" -> pushSwap la (sa lb) sl
+                            "sc" -> pushSwap (sa la) (sa lb) sl
                             "pa" -> pa la lb sl
                             "pb" -> pb la lb sl
-                            _ -> pushSwapBis la lb (s:sl)
+                            _    -> pushSwapBis la lb (s:sl)
 
 readInt :: [Char] -> Maybe Int
 readInt [] = Nothing
@@ -58,8 +58,9 @@ readInt a = case (reads a) :: [(Int, String)] of
                   [(nbr, "")] -> Just nbr
                   _         -> Nothing
 
-atoiList :: [String] -> [Int]
-atoiList = map read
+atoiList :: [String] -> Maybe [Int]
+atoiList (s:sl) | readInt s == Nothing = Nothing
+                | otherwise = (++) <$> read s <*> atoiList sl
 
 checkSort :: [Int] -> Bool
 checkSort [] = True
@@ -74,8 +75,13 @@ printResult (Just ([], _)) = putStrLn "KO"
 printResult (Just (la, [])) | checkSort la = putStrLn "OK"
 printResult (Just l) = putStr "KO: " >> print l
 
+test :: Maybe [Int] -> IO ()
+test Nothing = exitWith (ExitFailure 84)
+test _ = putStr ""
+
 main :: IO ()
 main = do
         operands <- words <$> getLine
         numbers <- atoiList <$> getArgs
+        test numbers
         printResult (pushSwap numbers [] operands)
