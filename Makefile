@@ -8,7 +8,7 @@
 ## VARIABLES
 ## --------------------------------------------->
 EXEC :=	pushswap_checker
-FLAG := -Wall -dynamic
+FLAG := -Wall -dynamic -O3
 CC :=	ghc
 EXT :=	hs
 ## --------------------------------------------->
