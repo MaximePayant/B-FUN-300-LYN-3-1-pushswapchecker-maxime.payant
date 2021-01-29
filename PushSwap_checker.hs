@@ -30,8 +30,8 @@ pb [] lb sl = pushSwap [] lb sl
 pb la lb sl = pushSwap (tail la) (head la:lb) sl
 
 pushSwapBis :: [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
-pushSwapBis [] [] _  = (Just ([], []))
-pushSwapBis la lb [] = (Just (la, lb))
+pushSwapBis [] [] _  = Just ([], [])
+pushSwapBis la lb [] = Just (la, lb)
 pushSwapBis la lb (s:sl) = case s of
                             "ra"  -> pushSwap (ra la) lb sl
                             "rb"  -> pushSwap la (ra lb) sl
@@ -39,9 +39,9 @@ pushSwapBis la lb (s:sl) = case s of
                             "rra" -> pushSwap (rra la) lb sl
                             "rrb" -> pushSwap la (rra lb) sl
                             "rrr" -> pushSwap (rra la) (rra lb) sl
-                            _ -> Nothing
+                            _     -> Nothing
 
-pushSwap :: Maybe [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
+pushSwap :: [Int] -> [Int] -> [String] -> Maybe ([Int], [Int])
 pushSwap [] [] _  = Just ([], [])
 pushSwap la lb [] = Just (la, lb)
 pushSwap la lb (s:sl) = case s of
@@ -54,13 +54,12 @@ pushSwap la lb (s:sl) = case s of
 
 readInt :: [Char] -> Maybe Int
 readInt [] = Nothing
-readInt a = case (reads a) :: [(Int, String)] of
+readInt a = case reads a :: [(Int, String)] of
                   [(nbr, "")] -> Just nbr
-                  _         -> Nothing
+                  _           -> Nothing
 
 atoiList :: [String] -> Maybe [Int]
-atoiList (s:sl) | readInt s == Nothing = Nothing
-                | otherwise = (++) <$> read s <*> atoiList sl
+atoiList = traverse readInt
 
 checkSort :: [Int] -> Bool
 checkSort [] = True
@@ -79,9 +78,13 @@ test :: Maybe [Int] -> IO ()
 test Nothing = exitWith (ExitFailure 84)
 test _ = putStr ""
 
+getMaybe :: Maybe [Int] -> [Int]
+getMaybe Nothing = []
+getMaybe (Just a) = a
+
 main :: IO ()
 main = do
         operands <- words <$> getLine
         numbers <- atoiList <$> getArgs
         test numbers
-        printResult (pushSwap numbers [] operands)
+        printResult (pushSwap (getMaybe numbers) [] operands)
